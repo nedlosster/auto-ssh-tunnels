@@ -21,3 +21,10 @@ SSH_EXTRA_OPTS=""
 #   SSH_JUMP_HOST="user@jumphost.example.com"
 #   SSH_JUMP_HOST="user@jumphost:2200"
 SSH_JUMP_HOST=""
+
+# Локальные пробросы портов: станция → сервер (ssh -L ...)
+# Формат: "локальный_порт:адрес:порт" (несколько через пробел)
+# Примеры:
+#   LOCAL_FORWARDS="3129:127.0.0.1:3128"                        # squid
+#   LOCAL_FORWARDS="3129:127.0.0.1:3128 8080:127.0.0.1:80"      # squid + web
+LOCAL_FORWARDS=""

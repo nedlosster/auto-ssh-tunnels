@@ -13,6 +13,11 @@ if [[ -n "${SSH_JUMP_HOST:-}" ]]; then
     JUMP_OPTS=(-o "ProxyCommand=ssh -W %h:%p ${SSH_JUMP_HOST}")
 fi
 
+LOCAL_FWD_OPTS=()
+for fwd in ${LOCAL_FORWARDS:-}; do
+    LOCAL_FWD_OPTS+=(-L "127.0.0.1:${fwd}")
+done
+
 exec /usr/bin/autossh -M 0 -N -T \
     -o "ServerAliveInterval=30" \
     -o "ServerAliveCountMax=3" \
@@ -22,5 +27,6 @@ exec /usr/bin/autossh -M 0 -N -T \
     -i "/home/${TUNNEL_USER}/.ssh/id_ed25519" \
     $SSH_EXTRA_OPTS \
     "${JUMP_OPTS[@]}" \
+    "${LOCAL_FWD_OPTS[@]}" \
     -R "127.0.0.1:${TUNNEL_PORT}:127.0.0.1:22" \
     $SSH_DESTINATION

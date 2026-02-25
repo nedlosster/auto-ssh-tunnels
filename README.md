@@ -92,6 +92,7 @@ sudo systemctl start reverse-tunnel
 | `TUNNEL_PORT` | Порт на сервере для туннеля | `2232` |
 | `SSH_EXTRA_OPTS` | Дополнительные SSH-опции (`-4`, `-p` и пр.) | _(пусто)_ |
 | `SSH_JUMP_HOST` | Jump-хост (`user@host`) | _(пусто)_ |
+| `LOCAL_FORWARDS` | Локальные пробросы портов станция→сервер (`ssh -L`). Формат: `порт:адрес:порт`, несколько через пробел | _(пусто)_ |
 
 > **Важно**: после изменения `TUNNEL_USER` необходимо переустановить сервис (`sudo bash setup-reverse-tunnel.sh`), т.к. `User=` в systemd unit подставляется при установке.
 
@@ -125,6 +126,13 @@ SSH_DESTINATION="nedlosster@38.135.122.149"
 TUNNEL_PORT=2232
 SSH_EXTRA_OPTS="-4"
 SSH_JUMP_HOST="root@nlproxy"
+```
+
+**Проброс squid-прокси с сервера на станцию:**
+```bash
+# Порт 3128 (squid) на сервере → localhost:3129 на станции
+LOCAL_FORWARDS="3129:127.0.0.1:3128"
+# Проверка: curl -x http://localhost:3129 http://example.com
 ```
 
 ## Настройка на стороне сервера
