@@ -11,9 +11,13 @@ SSH_DESTINATION="user@server.example.com"
 # (ssh -R 127.0.0.1:<TUNNEL_PORT>:127.0.0.1:22 ...)
 TUNNEL_PORT=2232
 
-# Дополнительные SSH-опции (ProxyJump, IPv4, agent forwarding и пр.)
-# Примеры:
-#   SSH_EXTRA_OPTS="-4 -J root@nlproxy"
-#   SSH_EXTRA_OPTS="-4 -J root@nlproxy -A -o ServerAliveInterval=60"
-#   SSH_EXTRA_OPTS="-p 2222 -J user@jumphost.example.com:2200"
+# Дополнительные SSH-опции (IPv4, agent forwarding и пр.)
 SSH_EXTRA_OPTS=""
+
+# Jump-хост (опционально). Используется ProxyCommand для совместимости
+# с OpenSSH 8.x (флаг -J пробрасывает -R в подпроцесс — баг).
+# Примеры:
+#   SSH_JUMP_HOST="root@nlproxy"
+#   SSH_JUMP_HOST="user@jumphost.example.com"
+#   SSH_JUMP_HOST="user@jumphost:2200"
+SSH_JUMP_HOST=""
