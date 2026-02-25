@@ -4,8 +4,10 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 CONF_SRC="$SCRIPT_DIR/reverse-tunnel.conf.example"
 SERVICE_SRC="$SCRIPT_DIR/reverse-tunnel.service"
+START_SRC="$SCRIPT_DIR/reverse-tunnel-start.sh"
 CONF_DST="/etc/reverse-tunnel.conf"
 SERVICE_DST="/etc/systemd/system/reverse-tunnel.service"
+START_DST="/usr/local/bin/reverse-tunnel-start.sh"
 
 # Читаем TUNNEL_USER из конфига (если конфиг уже установлен — из него, иначе из шаблона)
 if [[ -f "$CONF_DST" ]]; then
@@ -73,18 +75,23 @@ else
     echo "    Конфиг скопирован."
 fi
 
-# ─── 7. Копирование systemd unit (подстановка имени пользователя) ────
+# ─── 7. Копирование wrapper-скрипта ──────────────────────────────────
+echo ">>> Копирование wrapper-скрипта → $START_DST"
+cp "$START_SRC" "$START_DST"
+chmod 755 "$START_DST"
+
+# ─── 8. Копирование systemd unit (подстановка имени пользователя) ────
 echo ">>> Копирование systemd unit → $SERVICE_DST"
 sed "s/__TUNNEL_USER__/$TUNNEL_USER/g" "$SERVICE_SRC" > "$SERVICE_DST"
 chmod 644 "$SERVICE_DST"
 
-# ─── 8. Reload и enable ──────────────────────────────────────────────
+# ─── 9. Reload и enable ──────────────────────────────────────────────
 echo ">>> systemctl daemon-reload && enable reverse-tunnel..."
 systemctl daemon-reload
 systemctl enable reverse-tunnel
 echo "    Сервис включён (enable), но НЕ запущен."
 
-# ─── 9. Финальные инструкции ─────────────────────────────────────────
+# ─── 10. Финальные инструкции ────────────────────────────────────────
 echo ""
 echo "╔══════════════════════════════════════════════════════════════╗"
 echo "║  Установка завершена. Дальнейшие шаги:                     ║"
