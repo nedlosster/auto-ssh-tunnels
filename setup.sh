@@ -395,6 +395,7 @@ main() {
 
                 # Перезапуск при изменении конфига
                 if $svc_changed && systemctl is-active --quiet "autossh-tunnel-${CONN_NAME}"; then
+                    systemctl daemon-reload
                     log_info "Конфиг autossh-tunnel-${CONN_NAME} изменился, перезапускаю..."
                     systemctl restart "autossh-tunnel-${CONN_NAME}"
                 fi
