@@ -31,7 +31,7 @@ ExecStart=/usr/bin/autossh -M 0 -N \\
     -o "ServerAliveCountMax=${KEEPALIVE_COUNT}" \\
     -o "ExitOnForwardFailure=yes" \\
     -o "TCPKeepAlive=yes" \\
-    -o "StrictHostKeyChecking=accept-new" \\
+    -o "StrictHostKeyChecking=no" \\
 ${proxy_line}    -i /home/${TUNNEL_USER}/.ssh/id_ed25519 \\
     -p ${CONN_PORT} \\
     ${CONN_ARGS} \\
