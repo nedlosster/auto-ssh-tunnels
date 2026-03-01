@@ -58,7 +58,7 @@ cmd_publish() {
     local tag="v${VERSION}"
 
     # Проверка чистого working tree
-    if [[ -n "$(git -C "$SCRIPT_DIR" status --porcelain)" ]]; then
+    if [[ -n "$(git -C "$SCRIPT_DIR" status --porcelain --untracked-files=no)" ]]; then
         echo "ОШИБКА: working tree не чист. Закоммитьте изменения." >&2
         exit 1
     fi
