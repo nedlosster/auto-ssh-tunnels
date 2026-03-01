@@ -1,0 +1,22 @@
+# type4 — лаконичный SSH-туннель менеджер
+# Скопируй в config.yml и отредактируй
+
+tunnel_user: tunnel               # Системный пользователь для autossh
+log_dir: /var/log/ssh-tunnel
+
+defaults:
+  keepalive_interval: 30          # ServerAliveInterval
+  keepalive_count: 3              # ServerAliveCountMax
+  restart_delay: 10               # RestartSec в systemd
+  monitor_interval: 120           # Интервал watchdog (сек)
+  monitor_max_failures: 3         # Кол-во ошибок до рестарта
+
+connections:
+  - name: prod
+    server: admin@203.0.113.10:22
+    args: "-R 10080:127.0.0.1:80 -R 10443:127.0.0.1:443 -L 3129:127.0.0.1:3128"
+    jump: "root@bastion:2200"     # Опционально
+
+  - name: backup
+    server: deploy@198.51.100.20
+    args: "-R 10022:127.0.0.1:22 -A"
