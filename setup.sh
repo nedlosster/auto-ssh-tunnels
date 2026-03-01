@@ -219,7 +219,7 @@ show_status() {
             ssh_opts+=(-o StrictHostKeyChecking=accept-new)
             ssh_opts+=(-i "/home/${TUNNEL_USER}/.ssh/id_ed25519")
             if [ -n "${CONN_JUMP:-}" ]; then
-                ssh_opts+=(-o "ProxyCommand=ssh -W %h:%p ${CONN_JUMP}")
+                ssh_opts+=(-o "ProxyCommand=ssh -i /home/${TUNNEL_USER}/.ssh/id_ed25519 -o StrictHostKeyChecking=no -W %h:%p ${CONN_JUMP}")
             fi
             ssh_opts+=(-p "$CONN_PORT" -fN "${CONN_USER}@${CONN_HOST}")
 

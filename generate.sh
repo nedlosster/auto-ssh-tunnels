@@ -79,7 +79,7 @@ check_remote_ports() {
     ssh_opts+=(-i /home/${TUNNEL_USER}/.ssh/id_ed25519)
 
     if [ -n "\$jump" ]; then
-        ssh_opts+=(-o "ProxyCommand=ssh -W %h:%p \${jump}")
+        ssh_opts+=(-o "ProxyCommand=ssh -i /home/${TUNNEL_USER}/.ssh/id_ed25519 -o StrictHostKeyChecking=no -W %h:%p \${jump}")
     fi
 
     ssh_opts+=(-p "\$port" -fN "\${user}@\${host}")
