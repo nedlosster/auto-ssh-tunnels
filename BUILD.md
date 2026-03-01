@@ -55,6 +55,27 @@ sudo apt install ./auto-ssh-tunnels_1.0.0_all.deb
 sudo apt-get install ./auto-ssh-tunnels-1.0.0-alt1.noarch.rpm
 ```
 
+## Релиз
+
+Скрипт `release.sh` автоматизирует сборку и публикацию:
+
+```bash
+# Собрать пакеты (deb, rpm при наличии rpmbuild)
+bash release.sh build
+
+# Собрать + создать git tag + опубликовать GitHub release
+bash release.sh publish
+
+# Обновить версию
+bash release.sh bump 1.1.0
+
+# Dry-run (показать действия без выполнения)
+bash release.sh -d publish
+```
+
+Команда `publish` выполняет: проверку чистого working tree, сборку пакетов,
+создание тега `vX.Y.Z`, push, загрузку артефактов в GitHub release.
+
 ## FHS-пути в пакете
 
 ```

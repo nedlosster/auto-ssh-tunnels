@@ -28,6 +28,8 @@
 
 ### Из пакета
 
+Готовые пакеты доступны на странице [Releases](https://github.com/nedlosster/autossh/releases).
+
 ```bash
 # Ubuntu/Debian
 sudo apt install ./auto-ssh-tunnels_1.0.0_all.deb
@@ -116,7 +118,7 @@ sudo auto-ssh-tunnels copy-key <name> # копирование SSH-ключа н
 
 ## Сборка пакетов
 
-См. [BUILD.md](BUILD.md).
+Сборка и публикация релизов -- через `release.sh`. Подробности в [BUILD.md](BUILD.md).
 
 ## Логи и диагностика
 
