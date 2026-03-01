@@ -16,6 +16,7 @@ gen_autossh_service() {
 Description=AutoSSH Tunnel to ${CONN_NAME} (${CONN_HOST})
 After=network-online.target
 Wants=network-online.target
+StartLimitIntervalSec=0
 
 [Service]
 Type=simple
@@ -24,7 +25,6 @@ User=${TUNNEL_USER}
 Environment="AUTOSSH_GATETIME=30"
 Environment="AUTOSSH_POLL=600"
 Environment="AUTOSSH_PORT=0"
-Environment="AUTOSSH_LOGFILE=${LOG_DIR}/autossh-${CONN_NAME}.log"
 
 ExecStart=/usr/bin/autossh -M 0 -N \\
     -o "ServerAliveInterval=${KEEPALIVE_INTERVAL}" \\
@@ -39,7 +39,6 @@ ${proxy_line}    -i /home/${TUNNEL_USER}/.ssh/id_ed25519 \\
 
 Restart=always
 RestartSec=${RESTART_DELAY}
-StartLimitIntervalSec=0
 
 StandardOutput=append:${LOG_DIR}/autossh-${CONN_NAME}.log
 StandardError=append:${LOG_DIR}/autossh-${CONN_NAME}.log
