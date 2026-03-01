@@ -65,11 +65,6 @@ build_rpm() {
     tar -czf "$rpmbuild_dir/SOURCES/${tarball_name}.tar.gz" \
         -C "$BUILD_DIR" "${tarball_name}"
 
-    # Копируем скрипты для %post/%preun/%postun
-    cp "$SCRIPT_DIR/deb/postinst" "$rpmbuild_dir/SOURCES/postinst.sh"
-    cp "$SCRIPT_DIR/deb/prerm"    "$rpmbuild_dir/SOURCES/prerm.sh"
-    cp "$SCRIPT_DIR/deb/postrm"   "$rpmbuild_dir/SOURCES/postrm.sh"
-
     sed "s/@VERSION@/${VERSION}/g" "$SCRIPT_DIR/rpm/${PKG_NAME}.spec" \
         > "$rpmbuild_dir/SPECS/${PKG_NAME}.spec"
 

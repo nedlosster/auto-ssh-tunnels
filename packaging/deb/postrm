@@ -16,9 +16,9 @@ case "$1" in
         # Удаление логов
         rm -rf /var/log/ssh-tunnel
 
-        # Удаление пользователя tunnel
-        if id tunnel &>/dev/null; then
-            userdel -r tunnel 2>/dev/null || true
+        # Удаление пользователя autosshtunnels
+        if id autosshtunnels &>/dev/null; then
+            userdel -r autosshtunnels 2>/dev/null || true
         fi
         ;;
 esac

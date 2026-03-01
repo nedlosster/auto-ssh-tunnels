@@ -45,7 +45,7 @@ setup_common() {
         apt_install autossh openssh-client netcat-openbsd
     fi
 
-    # 2. Пользователь tunnel
+    # 2. Пользователь autosshtunnels
     if ! id "$TUNNEL_USER" &>/dev/null; then
         log_info "Создаю пользователя $TUNNEL_USER..."
         useradd -r -m -s /bin/bash "$TUNNEL_USER"

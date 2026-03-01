@@ -1,7 +1,7 @@
 # type4 — лаконичный SSH-туннель менеджер
 # Скопируй в config.yml и отредактируй
 
-tunnel_user: tunnel               # Системный пользователь для autossh
+tunnel_user: autosshtunnels       # Системный пользователь для autossh
 log_dir: /var/log/ssh-tunnel
 
 defaults:

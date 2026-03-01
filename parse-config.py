@@ -103,7 +103,7 @@ def print_globals(cfg):
     defaults = cfg.get("defaults", {}) or {}
 
     scalars = {
-        "TUNNEL_USER": cfg.get("tunnel_user", "tunnel"),
+        "TUNNEL_USER": cfg.get("tunnel_user", "autosshtunnels"),
         "LOG_DIR": cfg.get("log_dir", "/var/log/ssh-tunnel"),
         "KEEPALIVE_INTERVAL": defaults.get("keepalive_interval", 30),
         "KEEPALIVE_COUNT": defaults.get("keepalive_count", 3),

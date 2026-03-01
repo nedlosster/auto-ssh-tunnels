@@ -14,9 +14,6 @@ Requires:       python3-module-pyyaml
 Requires:       systemd
 
 Source0:        %{name}-%{version}.tar.gz
-Source1:        postinst.sh
-Source2:        prerm.sh
-Source3:        postrm.sh
 
 %description
 Manages multiple persistent SSH tunnels via a single YAML configuration.
@@ -36,14 +33,58 @@ cp -a usr etc %{buildroot}/
 %config(noreplace) /etc/%{name}/config.yml
 
 %post
-bash %{SOURCE1} configure
+# Пользователь autosshtunnels
+if ! id autosshtunnels &>/dev/null; then
+    useradd -r -m -s /bin/bash autosshtunnels
+fi
+
+# SSH-ключ
+SSH_DIR="/home/autosshtunnels/.ssh"
+KEY_FILE="${SSH_DIR}/id_ed25519"
+if [ ! -f "$KEY_FILE" ]; then
+    mkdir -p "$SSH_DIR"
+    ssh-keygen -t ed25519 -f "$KEY_FILE" -N "" -C "autosshtunnels@$(hostname)"
+    chown -R autosshtunnels:autosshtunnels "$SSH_DIR"
+    chmod 700 "$SSH_DIR"
+    chmod 600 "$KEY_FILE"
+fi
+
+# Директория логов
+mkdir -p /var/log/ssh-tunnel
+chown autosshtunnels:autosshtunnels /var/log/ssh-tunnel
 
 %preun
 if [ "$1" = "0" ]; then
-    bash %{SOURCE2} remove
+    # Остановка autossh-tunnel-* сервисов
+    for svc in $(systemctl list-units --type=service --no-legend 'autossh-tunnel-*' 2>/dev/null | awk '{print $1}'); do
+        systemctl stop "$svc" 2>/dev/null || true
+        systemctl disable "$svc" 2>/dev/null || true
+    done
+
+    # Остановка watchdog
+    systemctl stop tunnel-watchdog.timer 2>/dev/null || true
+    systemctl disable tunnel-watchdog.timer 2>/dev/null || true
+    systemctl stop tunnel-watchdog.service 2>/dev/null || true
+    systemctl disable tunnel-watchdog.service 2>/dev/null || true
 fi
 
 %postun
 if [ "$1" = "0" ]; then
-    bash %{SOURCE3} purge
+    # Удаление сгенерированных systemd-юнитов
+    rm -f /etc/systemd/system/autossh-tunnel-*.service
+    rm -f /etc/systemd/system/tunnel-watchdog.service
+    rm -f /etc/systemd/system/tunnel-watchdog.timer
+    systemctl daemon-reload 2>/dev/null || true
+
+    # Удаление health-check и logrotate
+    rm -f /usr/local/bin/tunnel-health.sh
+    rm -f /etc/logrotate.d/ssh-tunnel
+
+    # Удаление логов
+    rm -rf /var/log/ssh-tunnel
+
+    # Удаление пользователя autosshtunnels
+    if id autosshtunnels &>/dev/null; then
+        userdel -r autosshtunnels 2>/dev/null || true
+    fi
 fi

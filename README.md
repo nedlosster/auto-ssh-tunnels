@@ -55,7 +55,7 @@ sudo bash setup.sh
 Файл `config.yml`:
 
 ```yaml
-tunnel_user: tunnel
+tunnel_user: autosshtunnels
 log_dir: /var/log/ssh-tunnel
 
 defaults:
@@ -108,7 +108,7 @@ sudo auto-ssh-tunnels copy-key <name> # копирование SSH-ключа н
   tunnel-health.sh                 # скрипт проверки туннелей
 /var/log/ssh-tunnel/
   autossh-<name>.log               # логи autossh
-/home/tunnel/.ssh/
+/home/autosshtunnels/.ssh/
   id_ed25519                       # приватный ключ
   id_ed25519.pub                   # публичный ключ
   known_hosts                      # ключи серверов

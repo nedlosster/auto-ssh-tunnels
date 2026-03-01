@@ -29,7 +29,7 @@ sudo auto-ssh-tunnels full
 - Зависимости устанавливаются менеджером пакетов
 - Конфиг: `/etc/auto-ssh-tunnels/config.yml`
 - Команда: `auto-ssh-tunnels`
-- Пользователь `tunnel`, SSH-ключ и директория логов создаются при установке (postinst)
+- Пользователь `autosshtunnels`, SSH-ключ и директория логов создаются при установке (postinst)
 
 ## Установка из исходников
 
@@ -46,7 +46,7 @@ bash setup.sh status                  # проверка
 Файл `config.yml`:
 
 ```yaml
-tunnel_user: tunnel               # системный пользователь для autossh
+tunnel_user: autosshtunnels       # системный пользователь для autossh
 log_dir: /var/log/ssh-tunnel
 
 defaults:
@@ -91,8 +91,8 @@ connections:
 ## Что делает установка
 
 1. Устанавливает пакеты (autossh, openssh-client, netcat)
-2. Создает системного пользователя `tunnel` с домашней директорией
-3. Генерирует SSH-ключ Ed25519 (`/home/tunnel/.ssh/id_ed25519`)
+2. Создает системного пользователя `autosshtunnels` с домашней директорией
+3. Генерирует SSH-ключ Ed25519 (`/home/autosshtunnels/.ssh/id_ed25519`)
 4. Создает директорию логов (`/var/log/ssh-tunnel`)
 5. Для каждого connection генерирует systemd-сервис `autossh-tunnel-<name>.service`
 6. Генерирует watchdog: `tunnel-health.sh` + `tunnel-watchdog.timer` (периодическая проверка портов)
@@ -140,7 +140,7 @@ sudo auto-ssh-tunnels copy-key prod
 Альтернативно -- вручную:
 
 ```bash
-sudo cat /home/tunnel/.ssh/id_ed25519.pub
+sudo cat /home/autosshtunnels/.ssh/id_ed25519.pub
 # скопировать вывод в authorized_keys на целевом сервере
 ```
 
@@ -212,7 +212,7 @@ sudo auto-ssh-tunnels full
   tunnel-health.sh                 # скрипт проверки туннелей
 /var/log/ssh-tunnel/
   autossh-<name>.log               # логи autossh
-/home/tunnel/.ssh/
+/home/autosshtunnels/.ssh/
   id_ed25519                       # приватный ключ
   id_ed25519.pub                   # публичный ключ
   known_hosts                      # ключи серверов
