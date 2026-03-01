@@ -23,7 +23,7 @@ Manages multiple persistent SSH tunnels via a single YAML configuration.
 Generates systemd services, health-check watchdog, and logrotate configs.
 
 %prep
-%setup -c
+%setup -q
 
 %install
 cp -a usr etc %{buildroot}/
