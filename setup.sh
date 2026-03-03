@@ -308,6 +308,12 @@ dry_run() {
         gen_autossh_service
     done
 
+    echo ""
+    echo "=========================================="
+    echo "=== /usr/local/bin/tunnel-cleanup.sh ==="
+    echo "=========================================="
+    gen_tunnel_cleanup_sh
+
     # Собираем данные всех connections для health-check
     collect_all_conn_data
 
@@ -400,6 +406,9 @@ main() {
                     systemctl restart "autossh-tunnel-${CONN_NAME}"
                 fi
             done
+
+            # Cleanup скрипт (очистка зависших сессий перед запуском autossh)
+            gen_tunnel_cleanup_sh | deploy_file /usr/local/bin/tunnel-cleanup.sh 0755 || true
 
             # Health-check (один на все connections)
             collect_all_conn_data

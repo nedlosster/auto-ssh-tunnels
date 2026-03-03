@@ -3,12 +3,24 @@
 
 # --- autossh systemd service (per connection) ---
 # Использует переменные: CONN_NAME, CONN_HOST, CONN_USER, CONN_PORT, CONN_ARGS,
-#   CONN_JUMP, TUNNEL_USER, KEEPALIVE_INTERVAL, KEEPALIVE_COUNT, RESTART_DELAY, LOG_DIR
+#   CONN_JUMP, TUNNEL_USER, KEEPALIVE_INTERVAL, KEEPALIVE_COUNT, RESTART_DELAY, LOG_DIR,
+#   CONN_R_PORTS[]
 gen_autossh_service() {
     # ProxyCommand для jump-хоста (%%h/%%p — экранирование для systemd)
     local proxy_line=""
     if [ -n "$CONN_JUMP" ]; then
         proxy_line="    -o \"ProxyCommand=ssh -W %%h:%%p ${CONN_JUMP}\" \\"$'\n'
+    fi
+
+    # ExecStartPre: cleanup зависших сессий на remote (только если есть -R порты)
+    local cleanup_line=""
+    if [ ${#CONN_R_PORTS[@]} -gt 0 ] && [ -n "${CONN_R_PORTS[0]:-}" ]; then
+        local cleanup_args="${CONN_USER} ${CONN_HOST} ${CONN_PORT} ${TUNNEL_USER}"
+        if [ -n "$CONN_JUMP" ]; then
+            cleanup_args+=" ${CONN_JUMP}"
+        fi
+        cleanup_args+=" -- ${CONN_R_PORTS[*]}"
+        cleanup_line="ExecStartPre=-/usr/local/bin/tunnel-cleanup.sh ${cleanup_args}"$'\n'
     fi
 
     cat <<EOF
@@ -22,11 +34,7 @@ StartLimitIntervalSec=0
 Type=simple
 User=${TUNNEL_USER}
 
-Environment="AUTOSSH_GATETIME=30"
-Environment="AUTOSSH_POLL=600"
-Environment="AUTOSSH_PORT=0"
-
-ExecStart=/usr/bin/autossh -M 0 -N \\
+${cleanup_line}ExecStart=/usr/bin/autossh -M 0 -N \\
     -o "ServerAliveInterval=${KEEPALIVE_INTERVAL}" \\
     -o "ServerAliveCountMax=${KEEPALIVE_COUNT}" \\
     -o "ExitOnForwardFailure=yes" \\
@@ -180,6 +188,59 @@ HEADER
     for i in $(seq 0 $((${#_ALL_CONN_NAMES[@]} - 1))); do
         echo "check_conn '${_ALL_CONN_NAMES[i]}' '${_ALL_CONN_HOSTS[i]}' '${_ALL_CONN_PORTS[i]}' '${_ALL_CONN_USERS[i]}' '${_ALL_CONN_JUMPS[i]}' '${_ALL_CONN_MAX_FAILURES[i]}' ${_ALL_CONN_R_PORTS[i]} -- ${_ALL_CONN_L_PORTS[i]}"
     done
+}
+
+# --- Cleanup скрипт: убивает зависшие sshd на remote перед запуском autossh ---
+gen_tunnel_cleanup_sh() {
+    cat <<CLEANUP
+#!/bin/bash
+# Очистка зависших SSH-сессий на remote перед запуском autossh.
+# Вызывается через ExecStartPre в autossh-tunnel-*.service.
+# Использование: tunnel-cleanup.sh <user> <host> <port> <tunnel_user> [jump] -- <r_port1> ...
+
+LOG_FILE="${LOG_DIR}/tunnel-cleanup.log"
+log() { echo "\$(date '+%Y-%m-%d %H:%M:%S') \$*" >> "\$LOG_FILE"; }
+
+conn_user="\$1"; host="\$2"; port="\$3"; tunnel_user="\$4"; shift 4
+
+# Jump-хост (опционально)
+jump=""
+if [ "\$1" != "--" ]; then
+    jump="\$1"; shift
+fi
+shift  # пропускаем --
+
+r_ports=("\$@")
+[ \${#r_ports[@]} -eq 0 ] && exit 0
+
+# SSH-опции
+ssh_opts=(-o ConnectTimeout=10 -o StrictHostKeyChecking=no -o BatchMode=yes)
+ssh_opts+=(-i "/home/\${tunnel_user}/.ssh/id_ed25519")
+if [ -n "\$jump" ]; then
+    ssh_opts+=(-o "ProxyCommand=ssh -i /home/\${tunnel_user}/.ssh/id_ed25519 -o StrictHostKeyChecking=no -W %h:%p \${jump}")
+fi
+ssh_opts+=(-p "\$port" "\${conn_user}@\${host}")
+
+killed=0
+for rport in "\${r_ports[@]}"; do
+    # Ищем sshd, который слушает на порту
+    pid=\$(ssh "\${ssh_opts[@]}" "sudo ss -tlnp sport = :\${rport} 2>/dev/null" 2>/dev/null \
+        | grep -oP 'pid=\K[0-9]+' | head -1)
+
+    if [ -n "\$pid" ]; then
+        log "Порт \${rport} на \${host} занят sshd pid=\${pid}, убиваю"
+        ssh "\${ssh_opts[@]}" "sudo kill \${pid}" 2>/dev/null || true
+        killed=\$((killed + 1))
+    fi
+done
+
+if [ \$killed -gt 0 ]; then
+    log "Убито \${killed} зависших процессов на \${host}, жду освобождения портов"
+    sleep 1
+fi
+
+exit 0
+CLEANUP
 }
 
 # --- Watchdog systemd service (oneshot) ---
